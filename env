@@ -1,7 +1,7 @@
 # IN application vars
 APP_URL=http://invoiceninja/
 APP_KEY=base64:+apZgXw6SCVLiveixGlwMRoHwfZQqwAtSh32eYJECC4=
-APP_DEBUG=true
+APP_DEBUG=false
 REQUIRE_HTTPS=false
 PHANTOMJS_PDF_GENERATION=false
 PDF_GENERATOR=snappdf
