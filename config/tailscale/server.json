@@ -14,6 +14,7 @@
         }
     },
     "AllowFunnel": {
-        "${TS_CERT_DOMAIN}:443": false
+        "${TS_CERT_DOMAIN}:443": false,
+        "${TS_CERT_DOMAIN}:80": false
     }
 }
