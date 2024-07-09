@@ -39,8 +39,8 @@ services:
       #- "443:443"
     #networks:
      # - invoiceninja
-    extra_hosts:
-      - "in5.test:192.168.1.11 " #host and ip
+    #extra_hosts:
+    #  - "in5.test:192.168.1.11 " #host and ip
 
   invoiceninja-app:
     image: invoiceninja/invoiceninja:5
