@@ -1,6 +1,24 @@
 version: '3.7'
 
 services:
+  invoiceninja-tailscale:
+    image: tailscale/tailscale:latest
+    container_name: invoiceninja-tailscale
+    hostname: invoiceninja
+    environment:
+      - TS_AUTHKEY=tskey-auth-k8JyaeqfWT11CNTRL-zfqYRAHScWiPyhbsEGrzciTDatajqn62?ephemeral=false
+      - TS_EXTRA_ARGS=--advertise-tags=tag:container
+      - TS_SERVE_CONFIG=/config/invoiceninja.json
+      - TS_STATE_DIR=/var/lib/tailscale
+    volumes:
+      - ${PWD}/invoiceninja-tailscale/state:/var/lib/tailscale
+      - ${PWD}/invoiceninja-tailscale/config:/config
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
+  
   invoiceninja-server:
     image: nginx
     restart: always
@@ -12,13 +30,15 @@ services:
       - ./docker/app/public:/var/www/app/public:ro
     depends_on:
       - invoiceninja-app
+      - invoiceninja-tailscale
+    network_mode: service:invoiceninja-tailscale
     # Run webserver nginx on port 80
     # Feel free to modify depending what port is already occupied
-    ports:
-      - "8034:80"
+    #ports:
+     # - "8034:80"
       #- "443:443"
-    networks:
-      - invoiceninja
+    #networks:
+     # - invoiceninja
     extra_hosts:
       - "in5.test:192.168.1.11 " #host and ip
 
@@ -35,10 +55,12 @@ services:
 
     depends_on:
       - invoiceninja-db
-    networks:
-      - invoiceninja
-    extra_hosts:
-      - "in5.test:192.168.1.11 " #host and ip
+      - invoiceninja-tailscale
+    network_mode: service:invoiceninja-tailscale
+    #networks:
+    #  - invoiceninja
+    #extra_hosts:
+    #  - "in5.test:192.168.1.11 " #host and ip
 
   invoiceninja-db:
     image: mysql:8
@@ -46,10 +68,17 @@ services:
     env_file: env
     volumes:
       - ./docker/mysql/data:/var/lib/mysql:rw,delegated
-    networks:
-      - invoiceninja
-    extra_hosts:
-      - "in5.test:192.168.1.11 " #host and ip
+    depends_on:
+      - invoiceninja-tailscale
+    network_mode: service:invoiceninja-tailscale
+    #networks:
+    #  - invoiceninja
+    #extra_hosts:
+    #  - "in5.test:192.168.1.11 " #host and ip
 
-networks:
-  invoiceninja:
+#networks:
+#  invoiceninja:
+
+volumes:
+  invoiceninja-tailscale:
+    driver: local
