@@ -72,7 +72,6 @@ services:
     environment:
       - TS_AUTHKEY=tskey-auth-kySCaTdmXv11CNTRL-Lahskomf8ffBXP8CQcNmnfV2ntz8Ubtk7
       - TS_EXTRA_ARGS=--advertise-tags=tag:container
-      - TS_SERVE_CONFIG=/config/tailscale/db.json
       - TS_STATE_DIR=/var/lib/tailscale
     volumes:
       - ${PWD}/state/db:/var/lib/tailscale
