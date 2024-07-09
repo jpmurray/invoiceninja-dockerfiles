@@ -1,5 +1,5 @@
 # IN application vars
-APP_URL=http://invoiceninja/
+APP_URL=https://invoiceninja.lobster-great.ts.net/
 APP_KEY=base64:+apZgXw6SCVLiveixGlwMRoHwfZQqwAtSh32eYJECC4=
 APP_DEBUG=false
 REQUIRE_HTTPS=false
