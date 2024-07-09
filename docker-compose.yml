@@ -11,7 +11,7 @@ services:
       - ./config/nginx/in-vhost.conf:/etc/nginx/conf.d/in-vhost.conf:ro
       - ./docker/app/public:/var/www/app/public:ro
     depends_on:
-      - app
+      - invoiceninja-app
     # Run webserver nginx on port 80
     # Feel free to modify depending what port is already occupied
     ports:
