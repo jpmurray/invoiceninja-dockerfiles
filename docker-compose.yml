@@ -1,18 +1,19 @@
 version: '3.7'
 
 services:
-  invoiceninja-tailscale:
+
+  invoiceninja-server-ts:
     image: tailscale/tailscale:latest
-    container_name: invoiceninja-tailscale
-    hostname: invoiceninja
+    container_name: invoiceninja-server-ts
+    hostname: invoiceninja-server
     environment:
-      - TS_AUTHKEY=tskey-auth-k8JyaeqfWT11CNTRL-zfqYRAHScWiPyhbsEGrzciTDatajqn62?ephemeral=false
+      - TS_AUTHKEY=tskey-auth-kySCaTdmXv11CNTRL-Lahskomf8ffBXP8CQcNmnfV2ntz8Ubtk7
       - TS_EXTRA_ARGS=--advertise-tags=tag:container
-      - TS_SERVE_CONFIG=/config/invoiceninja.json
+      - TS_SERVE_CONFIG=/config/tailscale/server.json
       - TS_STATE_DIR=/var/lib/tailscale
     volumes:
-      - ${PWD}/invoiceninja-tailscale/state:/var/lib/tailscale
-      - ${PWD}/invoiceninja-tailscale/config:/config
+      - ${PWD}/state:/var/lib/tailscale
+      - ${PWD}/config:/config
       - /dev/net/tun:/dev/net/tun
     cap_add:
       - net_admin
@@ -24,23 +25,29 @@ services:
     restart: always
     env_file: env
     volumes:
-      # Vhost configuration
-      #- ./config/caddy/Caddyfile:/etc/caddy/Caddyfiledocker-com
       - ./config/nginx/in-vhost.conf:/etc/nginx/conf.d/in-vhost.conf:ro
       - ./docker/app/public:/var/www/app/public:ro
     depends_on:
       - invoiceninja-app
-      - invoiceninja-tailscale
-    network_mode: service:invoiceninja-tailscale
-    # Run webserver nginx on port 80
-    # Feel free to modify depending what port is already occupied
-    #ports:
-     # - "8034:80"
-      #- "443:443"
-    #networks:
-     # - invoiceninja
-    #extra_hosts:
-    #  - "in5.test:192.168.1.11 " #host and ip
+      - invoiceninja-server-ts
+    network_mode: service:invoiceninja-server-ts
+
+  invoiceninja-app-ts:
+    image: tailscale/tailscale:latest
+    container_name: invoiceninja-app-ts
+    hostname: invoiceninja-app
+    environment:
+      - TS_AUTHKEY=tskey-auth-kySCaTdmXv11CNTRL-Lahskomf8ffBXP8CQcNmnfV2ntz8Ubtk7
+      - TS_EXTRA_ARGS=--advertise-tags=tag:container
+      - TS_STATE_DIR=/var/lib/tailscale
+    volumes:
+      - ${PWD}/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
 
   invoiceninja-app:
     image: invoiceninja/invoiceninja:5
@@ -55,12 +62,26 @@ services:
 
     depends_on:
       - invoiceninja-db
-      - invoiceninja-tailscale
-    network_mode: service:invoiceninja-tailscale
-    #networks:
-    #  - invoiceninja
-    #extra_hosts:
-    #  - "in5.test:192.168.1.11 " #host and ip
+      - invoiceninja-app-ts
+    network_mode: service:invoiceninja-app-ts
+
+  invoiceninja-db-ts:
+    image: tailscale/tailscale:latest
+    container_name: invoiceninja-db-ts
+    hostname: invoiceninja-db
+    environment:
+      - TS_AUTHKEY=tskey-auth-kySCaTdmXv11CNTRL-Lahskomf8ffBXP8CQcNmnfV2ntz8Ubtk7
+      - TS_EXTRA_ARGS=--advertise-tags=tag:container
+      - TS_SERVE_CONFIG=/config/tailscale/db.json
+      - TS_STATE_DIR=/var/lib/tailscale
+    volumes:
+      - ${PWD}/state:/var/lib/tailscale
+      - ${PWD}/config:/config
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+    restart: unless-stopped
 
   invoiceninja-db:
     image: mysql:8
@@ -69,16 +90,13 @@ services:
     volumes:
       - ./docker/mysql/data:/var/lib/mysql:rw,delegated
     depends_on:
-      - invoiceninja-tailscale
-    network_mode: service:invoiceninja-tailscale
-    #networks:
-    #  - invoiceninja
-    #extra_hosts:
-    #  - "in5.test:192.168.1.11 " #host and ip
-
-#networks:
-#  invoiceninja:
+      - invoiceninja-db-ts
+    network_mode: service:invoiceninja-db-ts
 
 volumes:
-  invoiceninja-tailscale:
+  invoiceninja-app-ts:
+    driver: local
+  invoiceninja-server-ts:
+    driver: local
+  invoiceninja-db-ts:
     driver: local
